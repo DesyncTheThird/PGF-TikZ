@@ -35,6 +35,7 @@
 \usepackage{amsthm}
 \usepackage{tabularray}
 \usepackage{verbatim}
+\usepackage{verbatimbox}
 \usepackage{array}
 \usepackage{ulem}
 \usepackage{mathtools}
@@ -43,6 +44,7 @@
 \usepackage{color}
 
 \usepackage{xparse}
+
 
 
 
@@ -65,13 +67,33 @@
 \usetikzlibrary{fadings}
 \usetikzlibrary{backgrounds}
 \usepgflibrary{shadings}
-
+\usepgfplotslibrary{colorbrewer}
+\pgfplotsset{cycle list/Blues-9}
 
 \tikzset{
     loop above right/.style={above right, out= 60, in= 30, loop},
     loop above left/.style ={above left,  out=150, in=120, loop},
     loop below right/.style={below right, out=330, in=300, loop},
     loop below left/.style ={below left,  out=240, in=210, loop}
+}
+
+\tikzset{%
+  show curve controls/.style={
+        postaction={
+            decoration={
+                show path construction,
+                curveto code={
+                \draw [blue] 
+                    (\tikzinputsegmentfirst) -- (\tikzinputsegmentsupporta)
+                    (\tikzinputsegmentlast) -- (\tikzinputsegmentsupportb);
+                \fill [red, opacity=0.5] 
+                    (\tikzinputsegmentsupporta) circle [radius=.5ex]
+                    (\tikzinputsegmentsupportb) circle [radius=.5ex];
+                }
+            },
+            decorate
+        }
+    }
 }
 
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
@@ -97,6 +119,7 @@
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
 \newtheorem*{example}{Example}
+\newtheorem*{exercise}{Exercise}
 
 \renewcommand\qedsymbol{$\blacksquare$}
 
@@ -139,32 +162,18 @@
 }
 
 \frenchspacing
+\usepackage{bigfoot}
+\renewcommand{\footnoterule}{\vfill\kern -3pt \hrule width 0.4\columnwidth \kern 2.6pt}
+
+\usepackage{comment}
 
 \newcommand{\Tikz}{Ti\textit{k}z{}}
 
+
+\title{Introduction to PGF/\Tikz{}}
+\author{Kit Liu}
+
 \begin{document}
-
-ree
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 \end{document}
