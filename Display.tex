@@ -149,22 +149,6 @@
 \newcommand{\Tikz}{Ti\textit{k}z{}}
 
 
-
-\tikzset{%
-    baseline,
-    inner sep=2pt,
-    minimum height=12pt,
-    rounded corners=2pt  
-}
-\newcommand{\code}[1]{\mbox{%
-\ttfamily\tikz\node[anchor=base,fill=black!15]{#1};%
-}}
-\tikzset{%
-    baseline,
-    inner sep=2pt,
-    minimum height=12pt
-}
-
 \begin{document}
 
 \title{Introduction to PGF/\Tikz{}}
@@ -179,10 +163,11 @@ Because vector graphics consist of coordinates/lines/curves, the size of a repre
 
 Furthermore, the parameters of vector objects can be later modified, so that moving, scaling, rotating, filling, etc. does not degrade the quality of a vector image. In contrast, repeated modifications to a raster image will continually degrade the image quality as elements are snapped to a pixel grid between each edit.
 
+\section*{Getting Started}
 
-\section*{Your First \Tikz{} Diagram}
+A \Tikz{} diagram is built within the \verb|tikzpicture| environment. Primitives are specified and drawn using \Tikz{} commands within the environment, each terminated with a semicolon (\verb|;|).
 
-Every 
+Here is an example of some \Tikz{} code, and its output:
 
 
 \subsection*{Specifying Points}
@@ -206,12 +191,12 @@ This coordinate means ``2ex upwards and 5pt to the right of the origin''.
 Note that you can also write things like \verb|1em+2cm| in a dimension, since the maths engine is used to evaluate the coordinates.
 
 \begin{verbbox}[\small\mbox{}]
-    \begin{tikzpicture}
-        \draw[help lines] (0,0) grid (3,2);
-    
-        \filldraw (1cm,1.5cm)   circle (2pt);
-        \filldraw (2cm-5pt,3ex) circle (2pt);
-    \end{tikzpicture}
+\begin{tikzpicture}
+    \draw[help lines] (0,0) grid (3,2);
+
+    \filldraw (1cm,1.5cm)   circle (2pt);
+    \filldraw (2cm-5pt,3ex) circle (2pt);
+\end{tikzpicture}
 \end{verbbox}
 \begin{center}
     $\vcenter{\hbox{
@@ -237,12 +222,12 @@ or implicitly by providing the angle and a radius separated by a colon:
 This coordinate means ``2cm from the origin, 30 degrees counterclockwise from the positive $x$-axis''.
 
 \begin{verbbox}[\small\mbox{}]
-    \begin{tikzpicture}
-        \draw[help lines] (0,0) grid (3,2);
-        \draw (0,0) -- (30:2cm);
-    
-        \fill (30:2cm) circle (2pt);
-    \end{tikzpicture}
+\begin{tikzpicture}
+    \draw[help lines] (0,0) grid (3,2);
+    \draw (0,0) -- (30:2cm);
+
+    \fill (30:2cm) circle (2pt);
+\end{tikzpicture}
 \end{verbbox}
 \begin{center}
     $\vcenter{\hbox{
@@ -259,7 +244,7 @@ This coordinate means ``2cm from the origin, 30 degrees counterclockwise from th
 
 There are other coordinate systems, but we'll only discuss those on request. From now on, we'll also omit the explicit system declaration unless it is otherwise relevant.
 
-If units are not provided, e.g. \verb|(1,2)|, then the coordinates are specified in PGF's internal \verb|xy|-coordinate system. By default, the unit $x$-vector points 1cm to the right, and the unit $y$-vector points 1cm upwards.\footnote{It is possible to use coordinates like \verb|(1,2cm)|, which is neither an \verb|xy|-coordinate nor a \verb|canvas| coordinate. Roughly speaking, if you have mixed coordinates, \Tikz{} will typecast the coordinate \verb|(X,Ycm)| to the sum \verb|(X,0)+(0pt,Y)|, and similarly for any mixed dimensions. In particular, \verb|(2+3cm,0)| is \textit{not} the same as \verb|(2cm+3cm,0)|, as it will be typecast to sum\verb|(2pt,0) + (3cm,0) = (2pt+3cm,0)|.}
+If units are not provided, e.g. \verb|(1,2)|, then the coordinates are specified in PGF's internal \verb|xy|-coordinate system. By default, the unit $x$-vector points 1cm to the right, and the unit $y$-vector points 1cm upwards.\footnote{It is possible to use coordinates like \verb|(1,2cm)|, which is neither an \verb|xy|-coordinate nor a \verb|canvas| coordinate. Roughly speaking, if you have mixed coordinates, \Tikz{} will typecast the coordinate \verb|(X,Ycm)| to the sum \verb|(X,0)+(0pt,Y)|, and similarly for any mixed dimensions. In particular, \verb|(2+3cm,0)| is \textit{not} the same as \verb|(2cm+3cm,0)|, as it will be typecast to the sum \verb|(2pt,0) + (3cm,0) = (2pt+3cm,0)|.}
 
 By giving three numbers, as in \verb|(1,2,3)|, the coordinates are specified in PGF's internal $xyz$-coordinate system. By default, the unit $x$-vector points 1cm to the right, and the unit $y$-vector points 1cm upwards, and the unit $z$-vector points to \verb|(-3.85mm,-3.85mm)|.
 
@@ -282,20 +267,274 @@ To specify a straight line path between two coordinates, put two dashes between 
 \begin{verbatim}
     (0,0) -- (0,1) -- (1,1) -- cycle
 \end{verbatim}
-specifies a trianglar path, with the special \verb|cycle| coordinate being defined to be the first point in the path (e.g. \verb|(0,0)| in this case).
+specifies a trianglar path, with the special \verb|cycle| coordinate \textit{smoothly} closing the path. To see the difference between using \verb|cycle| and simply repeating the first coordinate, consider the following:
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=5pt]
+    \path[draw] (0,0) -- (0,1) -- (1,1) -- cycle;
+    \path[draw] (2,0) -- (2,1) -- (3,1) -- (2,0);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[line width=5pt]
+        \draw (0,0) -- (0,1) -- (1,1) -- cycle;
+        \draw (2,0) -- (2,1) -- (3,1) -- (2,0);
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
 
-% \subsection*{}
+\subsection*{Shapes and Special Paths}
 
+There are various commands for generating predefined shapes and patterns. For instance,
+\begin{verbatim}
+    (a,b) rectangle (c,d)
+\end{verbatim}
+specifies a rectangular box with opposite corners at \verb|(a,b)| and \verb|(c,d)|.
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=5pt]
+    \draw[help lines] (0,0) grid (3,2);
+
+    \path[draw] (0.5,0.5) rectangle (2.5,1.5);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \draw[thick] (0.5,0.5) rectangle (2,1.5);
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+\begin{verbatim}
+    (a,b) circle (r)
+\end{verbatim}
+specifies a circle centred at \verb|(a,b)| with radius \verb|r|.
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=5pt]
+    \draw[help lines] (0,0) grid (3,2);
+    
+    \path[draw] (1,1) circle (0.5);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \draw[thick] (1,1) circle (0.5);
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+
+
+
+\subsection*{Actions}
+
+Note that, so far, a path is simply a series of curves and coordinates -- we haven't actually told \Tikz{} what to do with them.
+
+Given a path, we may:
+\begin{itemize}
+    \item \textit{draw} or \textit{stroke} the path;
+    \item \textit{fill} the path;
+    \item \textit{clip} the path;
+    \item (various other specialised options);
+    \item or do any combination of the above.
+\end{itemize}
+
+To perform these actions, pass them as options to the \verb|\path| command or use one of these aliases:
+\begin{verbatim}
+    \draw ...     := \path[draw] ...
+    \fill ...     := \path[fill] ...
+    \filldraw ... := \path[fill,draw] ...
+    etc.
+\end{verbatim}
+
+\bigbreak
+
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}
+    \path     (0,0) circle (0.5); % does nothing
+    \draw     (2,0) circle (0.5);
+    \fill     (4,0) circle (0.5);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+        \begin{tikzpicture}
+            \path     (0,0) circle (0.5); % does nothing
+            \draw     (2,0) circle (0.5);
+            \fill     (4,0) circle (0.5);
+        \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+There are many other options you can pass to a draw command, but some important ones include:
+\begin{itemize}
+    \item colours;
+    \item opacities;
+    \item stroke width;
+    \item dash patterns;
+    \item arrow tips.
+\end{itemize}
+
+Passing a colour to a \verb|\draw| command will set the global colour in that scope, so all lines, fills, labels, etc. will all use that colour unless overridden locally. (Opacity has a similar discussion.) If any options are unset, they will default to black/full opacity (defaults may also be modified).
+
+More specialised options that only set individual colours/opacities may also be used:
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=2pt]
+    \draw (2,0) node {$1$} (4,0) node {$2$};
+
+    \filldraw[red]                    (0,0) circle (0.5);
+    \filldraw[draw=blue,fill=orange]  (2,0) circle (0.5);
+    \filldraw[blue,fill opacity=0.25] (4,0) circle (0.5);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[line width=2pt,scale=0.75]
+        \draw (2,0) node {$1$} (4,0) node {$2$};
+
+        \filldraw[red]                    (0,0) circle (0.5);
+        \filldraw[draw=blue,fill=orange]  (2,0) circle (0.5);
+        \filldraw[blue,fill opacity=0.25] (4,0) circle (0.5);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+Sidenote on opacity and drawing precedence: \Tikz{} draws objects on top of each other, in the order they are given. So, if you want something to appear behind something else, the obscured object must be drawn first, i.e. above the line where the obscuring object is drawn.
+
+As well as passing options to individual \verb|\draw| commands, you can pass options to the environment to set that option globally for everything in that environment. For instance, the \verb|line width| option for all the draw commands is set to \verb|2pt| at the top, so we don't need to set it for each draw command individually.
+
+Stroke widths affect the width of the paths drawn, and can be set with. There are various built-in widths available:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[ultra thin]  (0,6) -- (3,6);
+        \draw[very thin]   (0,5) -- (3,5);
+        \draw[thin]        (0,4) -- (3,4);
+        \draw[semithick]   (0,3) -- (3,3);
+        \draw[thick]       (0,2) -- (3,2);
+        \draw[very thick]  (0,1) -- (3,1);
+        \draw[ultra thick] (0,0) -- (3,0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[ultra thin]  (0,6) -- (3,6);
+        \draw[very thin]   (0,5) -- (3,5);
+        \draw[thin]        (0,4) -- (3,4);
+        \draw[semithick]   (0,3) -- (3,3);
+        \draw[thick]       (0,2) -- (3,2);
+        \draw[very thick]  (0,1) -- (3,1);
+        \draw[ultra thick] (0,0) -- (3,0);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Arrows can also be added using this syntax:
+\begin{verbatim}
+    \draw[->] ...
+\end{verbatim}
+or similar. There are also various types of arrowheads, \verb|>| being one of the basic kinds. More configurations are listed below:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[->]                   (0,7) -- (3,7);
+        \draw[<-]                   (0,6) -- (3,6);
+        \draw[>-]                   (0,5) -- (3,5);
+        \draw[>->]                  (0,4) -- (3,4);
+        \draw[|->]                  (0,3) -- (3,3);
+        \draw[|<->|]                (0,2) -- (3,2);
+        \draw[-stealth]             (0,1) -- (3,1);
+        \draw[-latex]               (0,0) -- (3,0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[->]                   (0,7) -- (3,7);
+        \draw[<-]                   (0,6) -- (3,6);
+        \draw[>-]                   (0,5) -- (3,5);
+        \draw[>->]                  (0,4) -- (3,4);
+        \draw[|->]                  (0,3) -- (3,3);
+        \draw[|<->|]                (0,2) -- (3,2);
+        \draw[-stealth]             (0,1) -- (3,1);
+        \draw[-latex]               (0,0) -- (3,0);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Other usual options may also be passed locally to the arrowhead:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[red,->]           (0,2) -- (3,2);
+        \draw[-{>[red]}]        (0,1) -- (3,1);
+        \draw[-{>[length=3mm]}] (0,0) -- (3,0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[red,->]           (0,2) -- (3,2);
+        \draw[-{>[red]}]        (0,1) -- (3,1);
+        \draw[-{>[length=3mm]}] (0,0) -- (3,0);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Lines can also be dashed/dotted. There are various built-in pattern available (not all listed):
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[dotted]         (0,6) -- (3,6);
+        \draw[densely dotted] (0,5) -- (3,5);
+        \draw[loosely dotted] (0,4) -- (3,4);
+        \draw[dashed]         (0,3) -- (3,3);
+        \draw[densely dashed] (0,2) -- (3,2);
+        \draw[loosely dashed] (0,1) -- (3,1);
+        \draw[dash dot]       (0,0) -- (3,0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[yscale=0.4]
+        \draw[dotted]         (0,6) -- (3,6);
+        \draw[densely dotted] (0,5) -- (3,5);
+        \draw[loosely dotted] (0,4) -- (3,4);
+        \draw[dashed]         (0,3) -- (3,3);
+        \draw[densely dashed] (0,2) -- (3,2);
+        \draw[loosely dashed] (0,1) -- (3,1);
+        \draw[dash dot]       (0,0) -- (3,0);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+More generally, you can specify the pattern manually using the \verb|dash pattern| option:
+\begin{verbatim}
+    dash pattern=x on y off
+\end{verbatim}
+where \verb|x| and \verb|y| are any \TeX{} dimensions.
 
 
 \subsection*{Nodes}
 
 
-% \subsection*{Other}
-
 
 \subsection*{The Calc Library}
 
+
+
+\section*{Your First \Tikz{} Diagram}
 
 
 
@@ -505,6 +744,25 @@ Simpler version without if/else clauses for labels:
             circle (2.5pt) node [above left=5pt and -2pt] {$b$};
     \end{tikzpicture}
 \end{center}
+
+
+
+\section*{Exercises}
+
+Time to put everything together. Recreate the following diagram:
+
+\begin{center}
+    \begin{tikzpicture}[scale=2]
+        \draw[step=.5,help lines] (-1.4,-1.4) grid (1.4,1.4);
+        \draw[->] (-1.5,0) -- (1.5,0) node [right] {$x$};
+        \draw[->] (0,-1.5) -- (0,1.5) node [above] {$y$};
+        \draw (0,0) circle (1cm);
+    \end{tikzpicture}
+\end{center}
+
+
+
+
 
 
 
