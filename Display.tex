@@ -68,6 +68,7 @@
 \usetikzlibrary{backgrounds}
 \usepgflibrary{shadings}
 \usepgfplotslibrary{colorbrewer}
+\pgfplotsset{cycle list/Blues-9}
 
 \tikzset{
     loop above right/.style={above right, out= 60, in= 30, loop},
@@ -364,8 +365,7 @@ Furthermore, the parameters of vector objects can be later modified, so that mov
 
 A \Tikz{} diagram is built within the \verb|tikzpicture| environment. Primitives are specified and drawn using \Tikz{} commands within the environment, each terminated with a semicolon (\verb|;|).
 
-Here is an example of some \Tikz{} code, and its output:
-
+% Here is an example of some \Tikz{} code, and its output:
 
 \subsection*{Specifying Points}
 
@@ -457,8 +457,7 @@ A coordinate may also be given a name using the syntax:
 \begin{verbatim}
     \coordinate (name) at (coordinate)
 \end{verbatim}
-
-
+This is useful for repeatedly referencing a coordinate later, or for performing computations.
 
 
 \subsection*{Paths}
@@ -487,7 +486,7 @@ specifies a trianglar path, with the special \verb|cycle| coordinate \textit{smo
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
 
-\subsection*{Shapes and Special Paths}
+\subsection*{Shapes}
 
 There are various commands for generating predefined shapes and patterns. For instance,
 \begin{verbatim}
@@ -498,7 +497,7 @@ specifies a rectangular box with opposite corners at \verb|(a,b)| and \verb|(c,d
 \begin{tikzpicture}[line width=5pt]
     \draw[help lines] (0,0) grid (3,2);
 
-    \path[draw] (0.5,0.5) rectangle (2.5,1.5);
+    \draw[thick] (0.5,0.5) rectangle (2,1.5);
 \end{tikzpicture}
 \end{verbbox}
 \begin{center}
@@ -537,9 +536,133 @@ specifies a circle centred at \verb|(a,b)| with radius \verb|r|.
 \end{center}
 
 
+\begin{verbatim}
+    (a,b) ellipse [x radius=X, y radius=Y, rotate=T]
+\end{verbatim}
+specifies an ellipse centred at \verb|(a,b)| with radii \verb|X| and \verb|Y|, and rotation \verb|T|.
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=5pt]
+    \draw[help lines] (0,0) grid (3,2);
+    
+    \path[draw] (1,1) ellipse [x radius=1, y radius=0.5, rotate=30];
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \path[draw]
+            (1,1) ellipse [x radius=1, y radius=0.5,rotate=30];
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
 
 
-\subsection*{Actions}
+
+\subsection*{Arcs}
+
+The \textit{arc} operation draws arcs of ellipses between paths, specified using the following syntax:
+\begin{verbatim}
+    \path ... arc [radius=R, start angle=A, end angle=B] ... ;
+\end{verbatim}
+(The $x$ and $y$ radii may also be set separately.)
+
+There also exists a shorter syntax for circular arcs:
+\begin{verbatim}
+    \path ... arc (start:end:radius) ... ;
+\end{verbatim}
+However, this form is very difficult to read, so the normal syntax is recommended in general.
+\begin{verbbox}[\small\mbox{}]
+\begin{tikzpicture}[line width=5pt]
+    \draw[help lines] (0,0) grid (3,2);
+    
+    \path[draw] (1,0) arc (0:45:1);
+\end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \path[draw] (1,0) arc (0:45:1);
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+
+
+\subsection*{To}
+
+The \textit{to} operation adds a flexible path between coordinates that may be modified through various options. For instance, there are the \verb|out| and \verb|in| keys, that change the outgoing and incoming angles the path makes to the coordinates:
+
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \path[draw] (0,0) to[out=0,in=-90] (2,1);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (3,2);
+        
+        \path[draw] (0,0) to[out=0,in=-90] (2,1);
+    \end{tikzpicture}
+    }}$
+    \hspace*{0.5cm}
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+
+
+\subsection*{Bézier Curves}
+Cubic Bézier curves may be specified with the following syntax:
+\begin{verbatim}
+    \draw (x,y) .. controls (a,b) and (c,d) .. (x,y');
+\end{verbatim}
+where the coordinates \verb|(a,b)| and \verb|(c,d)| are the two control points of the curve.
+
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw [help lines] (-4, -1) grid (4, 5);
+
+        \draw [show curve controls]
+            (-3, 4) .. controls ++(135:-1) and ++(135:1) .. (0, 4);
+        \draw [show curve controls] (0, 0) 
+          .. controls ++(165:-1) and ++(240: 1) .. ( 3, 2)
+          .. controls ++(240:-1) and ++(165:-1) .. ( 2, 4)
+          .. controls ++(165: 1) and ++(175:-2) .. (-1, 2)
+          .. controls ++(175: 2) and ++(165: 1) .. ( 0, 0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[scale = 0.5]
+        \draw [help lines] (-4, -1) grid (4, 5);
+
+        \draw [show curve controls]
+            (-3, 4) .. controls ++(135:-1) and ++(135:1) .. (0, 4);
+        \draw [show curve controls] (0, 0) 
+          .. controls ++(165:-1) and ++(240: 1) .. ( 3, 2)
+          .. controls ++(240:-1) and ++(165:-1) .. ( 2, 4)
+          .. controls ++(165: 1) and ++(175:-2) .. (-1, 2)
+          .. controls ++(175: 2) and ++(165: 1) .. ( 0, 0);
+    \end{tikzpicture}
+    }}$
+    \hspace*{5cm}
+    $\mathclap{\vcenter{\scalebox{0.75}{\theverbbox}}}$
+    \hspace*{5cm}
+\end{center}
+It is often helpful to specify control points using relative and polar coordinates, as above.
+
+
+\section*{Actions}
 
 Note that, so far, a path is simply a series of curves and coordinates -- we haven't actually told \Tikz{} what to do with them.
 
@@ -560,8 +683,7 @@ To perform these actions, pass them as options to the \verb|\path| command or us
     etc.
 \end{verbatim}
 
-\bigbreak
-
+Without one of these options, a path will simply be discarded:
 \begin{verbbox}[\small\mbox{}]
 \begin{tikzpicture}
     \path     (0,0) circle (0.5); % does nothing
@@ -701,7 +823,7 @@ Other usual options may also be passed locally to the arrowhead:
     }}$
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
-Lines can also be dashed/dotted. There are various built-in pattern available (list is not exhaustive):
+Lines can also be dashed/dotted. There are various built-in patterns available (list is not exhaustive):
 \begin{verbbox}[\small\mbox{}]
     \begin{tikzpicture}[yscale=0.4]
         \draw[dotted]         (0,6) -- (3,6);
@@ -733,9 +855,36 @@ More generally, you can specify the pattern manually using the \verb|dash patter
 \end{verbatim}
 where \verb|x| and \verb|y| are any \TeX{} dimensions.
 
+Lines may also be \textit{decorated} as follows:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[decoration={
+        markings,
+        mark=at position 0.53 with {\arrow{>}}}
+        ] 
+        \draw[postaction={decorate}] (0,1) -- (3,1);
+        \draw                        (0,0) -- (3,0);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[decoration={
+        markings,
+        mark=at position 0.53 with {\arrow{>}}}
+        ] 
+        \draw[postaction={decorate}] (0,1) -- (3,1);
+        \draw                        (0,0) -- (3,0);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Note that arrow decorations are centred at their tips, so arrows need to be positioned slightly past the halfway point (e.g. 0.53 in the above) to appear properly centred.
+
+
+
+
 \subsection*{Nodes}
 
-Nodes are used to add text to an image. They may be specified and drawn using the syntax:
+Nodes are used to add text to a diagram. They may be specified and drawn using the following syntax:
 \begin{verbatim}
     \node at (x,y) [options] {label}
 \end{verbatim}
@@ -765,26 +914,47 @@ Nodes are specified in this way are positioned at the last coordinate mentioned.
 \begin{verbbox}[\small\mbox{}]
     \begin{tikzpicture}[fill=blue!20!white]
     \fill
-        (0,0) node              {first node}
-     -- (1,1) node[behind path] {second node}
-     -- (2,0) node              {third node};
+        (0,0) node               {first node}
+     -- (1,1) node               {second node}
+     -- (2,0) node [behind path] {third node};
     \end{tikzpicture}
 \end{verbbox}
 \begin{center}
     $\vcenter{\hbox{
     \begin{tikzpicture}[fill=blue!20!white]
     \fill
-        (0,0) node              {first node}
-     -- (1,1) node[behind path] {second node}
-     -- (2,0) node              {third node};
+        (0,0) node               {first node}
+     -- (1,1) node               {second node}
+     -- (2,0) node [behind path] {third node};
     \end{tikzpicture}
     }}$
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
+
+Nodes may also be placed on paths by specifying the node after a path starts, but before the endpoint is specified:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+    \begin{tikzpicture}
+    \draw
+        (0,0) -- node {$p$}
+        (1,1) node {$X$};
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+    \draw
+        (0,0) -- node {$p$}
+        (1,1) node {$X$};
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
 Nodes may also take some standard shapes as options (as well as colours, opacities, etc.). Passing the \verb|draw| option along with these shapes will draw the shape around the node, dynamically resizing to fit the label inside:
 \begin{verbbox}[\small\mbox{}]
     \begin{tikzpicture}
-        \fill
+        \draw[fill=blue]
             (0,0) node                            {first node}
          -- (1,1) node[ellipse,draw, behind path] {second node}
          -- (0,2) node[circle,fill=red!20]        {third node};
@@ -793,10 +963,10 @@ Nodes may also take some standard shapes as options (as well as colours, opaciti
 \begin{center}
     $\vcenter{\hbox{
     \begin{tikzpicture}
-    \filldraw
-        (0,0) node                            {first node}
-     -- (1,1) node[ellipse,draw, behind path] {second node}
-     -- (0,2) node[circle,fill=red!20]        {third node};
+        \draw[fill=blue]
+            (0,0) node                            {first node}
+         -- (1,1) node[ellipse,draw, behind path] {second node}
+         -- (0,2) node[circle,fill=red!20]        {third node};
     \end{tikzpicture}
     }}$
     $\vcenter{\hbox{\theverbbox}}$
@@ -814,7 +984,7 @@ A named node may be later referenced by its name. This is useful for computation
 
 
 
-\subsection*{The Calc Library}
+\subsection*{Coordinate Computation}
 We have already seen some computation within coordinates, but we can do a lot more than simply adding dimensions together.
 
 A coordinate computation is marked with a pair of \$ symbols. One basic computation is to add and scale coordinates:
@@ -845,19 +1015,218 @@ A coordinate computation is marked with a pair of \$ symbols. One basic computat
         \filldraw[green] ($ (a) + 2*(b) $) circle (2pt);
 
         \draw[blue,->] (0,0) -- (a);
-        \draw[blue,->] ($2*(b)$) -- ($(a) + 2*(b)$);
+        \draw[blue,->,shorten >=4pt] ($2*(b)$) -- ($(a) + 2*(b)$);
 
         \draw[cyan,->] (0,0) -- (b);
         \draw[cyan,->] (0,0) -- ($2*(b)$);
         \draw[cyan,->] (a) -- ($(a) + (b)$);
-        \draw[cyan,->] ($(a) + (b)$) -- ($(a) + 2*(b)$);
+        \draw[cyan,->,shorten >=4pt] ($(a) + (b)$) -- ($(a) + 2*(b)$);
     \end{tikzpicture}
     }}$
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
-Note how the arrows automatically
+
+A coordinate may be followed by various kinds of modifiers. The first kind of interest is the \textit{partway modifier}, with syntax:
+\begin{verbatim}
+    (a)!N!(b)
+\end{verbatim}
+The number \verb|N| linearly interpolates between the first and second coordinates:
+\begin{equation*}
+    (1-N)(a)+N(b)
+\end{equation*}
+Note that \verb|N| need not be between $0$ and $1$.
+
+If \verb|N| instead has a dimension, e.g. \verb|N=1cm|, then this is the \textit{distance modifier}, and instead returns the point at distance \verb|N| from \verb|(a)| along the line connecting \verb|(a)| and \verb|(b)|.
+
+If \verb|N| is instead itself is a coordinate, e.g. \verb|N=(c)|, then this is the \textit{projection modifier}, and instead returns the projection of \verb|N| on to the line connecting \verb|(a)| and \verb|(b)|.
 
 
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (3,3);
+        \coordinate (a) at (1,0);
+        \coordinate (b) at (3,2);
+
+        \draw[->] (a) -- (b);
+        \coordinate (c) at ($ (a)!1! 10:(b) $);
+        \draw[->,red] (a) -- (c);
+        \fill ($ (a)!.5! 10:(b) $) circle (2pt);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (3,2);
+        
+        \coordinate (a) at (0,1);
+        \coordinate (b) at (1.5,2);
+        \coordinate (c) at (2,0);
+        
+        \draw (a) -- (b) -- (c) -- cycle;
+        
+        \draw[red]    (a) -- ($(b)!(a)!(c)$);
+        \draw[orange] (b) -- ($(a)!(b)!(c)$);
+        \draw[blue]   (c) -- ($(a)!(c)!(b)$);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Another kind of modifier is the \textit{angle modifier}, with syntax:
+\begin{verbatim}
+    (a)!N!T:(b)
+\end{verbatim}
+(\verb|N| cannot be omitted from this; just set \verb|N=1| if the other modifiers are not desired.)
+
+The number \verb|T| rotates the line from \verb|(a)| to \verb|(b)| about the point \verb|(a)| by \verb|T| degrees.
+
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (3,3);
+        \coordinate (a) at (1,0);
+        \coordinate (b) at (3,2);
+
+        \draw[->] (a) -- (b);
+        \coordinate (c) at ($ (a)!1! 10:(b) $);
+        \draw[->,red] (a) -- (c);
+        \fill ($ (a)!.5! 10:(b) $) circle (2pt);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (3,3);
+        \coordinate (a) at (1,0);
+        \coordinate (b) at (3,2);
+        
+        \draw[->] (a) -- (b);
+        \coordinate (c) at ($ (a)!1!10:(b) $);
+        \draw[->,red] (a) -- (c);
+        \fill ($ (a)!.5! 10:(b) $) circle (2pt);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+
+
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (4,4);
+    
+        \foreach \i in {0,0.125,...,2} {
+            \fill ($(2,2) !\i! \i*180:(3,2)$) circle (2pt);
+        }
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw [help lines] (0,0) grid (4,4);
+    
+        \foreach \i in {0,0.125,...,2} {
+            \fill ($(2,2) !\i! \i*180:(3,2)$) circle (2pt);
+        }
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+
+
+
+
+
+% To perform computations on iteration variables, use \pgfmathsetmacro
+
+% To perform computation in axis environments, you will have to use PGF commands, e.g. \verb|pgfplotsinvokeforeach| rather than \verb{\foreach}, as most Tikz commands will not work there.
+
+
+
+
+
+
+\section*{Axis Environment}
+
+% \begin{align*}
+%     g_n(x)=\begin{cases}
+%         2nx&x\in[0,\frac{1}{2n})\\
+%         -2n\bigl(x-\frac{1}{n}\bigr)&x\in[\frac{1}{2n},\frac{1}{n})\\
+%         0&x\in[\frac{1}{n},1]\\
+%     \end{cases}\qquad\qquad
+%     h_n(x)=\begin{cases}
+%         2n^2x&x\in[0,\frac{1}{2n})\\
+%         -2n^2\bigl(x-\frac{1}{n}\bigr)&x\in[\frac{1}{2n},\frac{1}{n})\\
+%         0&x\in[\frac{1}{n},1]\\
+%     \end{cases}
+% \end{align*}
+% \begin{center}
+%     \begin{samepage}
+%         \resizebox*{5cm}{!}{% 
+%         \begin{tikzpicture}[declare function={
+%             func(\x,\n)=
+%                     (2*\n*\x) * and(0 <= \x, \x < (1/(2*\n)))
+%                     +
+%                     (-2*\n*(\x - (1/\n))) * and((1/(2*\n)) <= \x, \x <= (1/\n))
+%                     +
+%                     (0) * ((1/\n) <= \x);
+%             }]
+%             \begin{axis}[%
+%                 axis x line=middle,
+%                 axis y line=middle,
+%                 xmin=-0.1,
+%                 xmax=1.1,
+%                 ymin=-0.1,
+%                 ymax=1.1,
+%                 samples=100,
+%                 domain=0:1,
+%                 cycle multi list={Blues-9}
+%                 ]
+%                 \addplot+[thick] {func(x,9)};
+%                 \addplot+[thick] {func(x,8)};
+%                 \addplot+[thick] {func(x,7)};
+%                 \addplot+[thick] {func(x,6)};
+%                 \addplot+[thick] {func(x,5)};
+%                 \addplot+[thick] {func(x,4)};
+%                 \addplot+[thick] {func(x,3)};
+%                 \addplot+[thick] {func(x,2)};
+%                 \addplot+[thick] {func(x,1)};
+%             \end{axis}
+%         \end{tikzpicture}
+%     }%
+%     \qquad\qquad
+%     \resizebox*{5cm}{!}{% 
+%     \begin{tikzpicture}[declare function={
+%         func(\x,\n)=
+%                 (2*(\n^2)*\x) * and(0 <= \x, \x < (1/(2*\n)))
+%                 +
+%                 (-2*(\n^2)*(\x - (1/\n))) * and((1/(2*\n)) <= \x, \x <= (1/\n))
+%                 +
+%                 (0) * ((1/\n) <= \x);
+%         }]
+%         \begin{axis}[%
+%             axis x line=middle,
+%             axis y line=middle,
+%             xmin=-0.1,
+%             xmax=1.1,
+%             ymin=-1,
+%             ymax=11,
+%             samples=100,
+%             domain=0:1,
+%             cycle multi list={Blues-9}
+%             ]
+%             \addplot+[thick] {func(x,9)};
+%             \addplot+[thick] {func(x,8)};
+%             \addplot+[thick] {func(x,7)};
+%             \addplot+[thick] {func(x,6)};
+%             \addplot+[thick] {func(x,5)};
+%             \addplot+[thick] {func(x,4)};
+%             \addplot+[thick] {func(x,3)};
+%             \addplot+[thick] {func(x,2)};
+%             \addplot+[thick] {func(x,1)};
+%         \end{axis}
+%     \end{tikzpicture}
+% }%
+% \end{samepage}
+% \end{center}
 
 
 
@@ -871,6 +1240,8 @@ Note how the arrows automatically
 
 
 
+
+\newpage
 \section*{Anchors}
 
 \tikzset{
@@ -897,6 +1268,9 @@ Note how the arrows automatically
     \end{tikzpicture}
 \end{center}
 
+
+\vspace*{2cm}
+
 \begin{center}
     \begin{tikzpicture}
         \node[name=s,shape=rectangle,shape example] {Rectangle\vrule width 1pt height 2cm};
@@ -911,9 +1285,6 @@ Note how the arrows automatically
                 node[\placement] {\scriptsize\texttt{(s.\anchor)}};
     \end{tikzpicture}
 \end{center}
-
-
-
 
 
 
@@ -1208,6 +1579,37 @@ Simpler version without if/else clauses for labels:
         }
     \end{center}
 
+    \item Recreate the following diagram:
+    \begin{center}
+        \begin{tikzpicture}[scale=6]
+            \coordinate (001) at (0,0);
+            \coordinate (010) at (0.5,0.866);
+            \coordinate (100) at (1,0);
+            \coordinate (011) at ($ 1/2*(001) + 1/2*(010) $);
+            \coordinate (101) at ($ 1/2*(001) + 1/2*(100) $);
+            \coordinate (110) at ($ 1/2*(010) + 1/2*(100) $);
+            \coordinate (111) at ($ 1/3*(001) + 1/3*(010) + 1/3*(100)$);
+
+            \filldraw (001) circle (0.25pt) node [below left]  {$(0,0,1)$};
+            \filldraw (010) circle (0.25pt) node [above]       {$(0,1,0)$};
+            \filldraw (100) circle (0.25pt) node [below right] {$(1,0,0)$};
+            \filldraw (011) circle (0.25pt) node [above left]  {$(0,1,1)$};
+            \filldraw (101) circle (0.25pt) node [below]       {$(1,0,1)$};
+            \filldraw (110) circle (0.25pt) node [above right] {$(1,1,0)$};
+            \filldraw (111) circle (0.25pt) node [right]       {$(1,1,1)$};
+
+            \begin{scope}[on background layer]
+                \draw[thick, red]     (001) -- (010);
+                \draw[thick, blue]    (010) -- (100);
+                \draw[thick, green]   (100) -- (001);
+                \draw[thick, cyan]    (011) -- (100);
+                \draw[thick, magenta] (101) -- (010);
+                \draw[thick, yellow]  (110) -- (001);
+                \draw[thick] (111) circle (0.289);
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+
     \item Recreate (some of) the following diagrams:
     \begin{center}
         \begin{tikzpicture}[baseline=(base)]
@@ -1475,80 +1877,101 @@ Simpler version without if/else clauses for labels:
 
     \item Recreate the following diagram:
     \begin{center}
-        \begin{tikzpicture}[scale=6]
-            \coordinate (001) at (0,0);
-            \coordinate (010) at (0.5,0.866);
-            \coordinate (100) at (1,0);
-            \coordinate (011) at ($ 1/2*(001) + 1/2*(010) $);
-            \coordinate (101) at ($ 1/2*(001) + 1/2*(100) $);
-            \coordinate (110) at ($ 1/2*(010) + 1/2*(100) $);
-            \coordinate (111) at ($ 1/3*(001) + 1/3*(010) + 1/3*(100)$);
-
-            \filldraw (001) circle (0.25pt) node [below left]  {$(0,0,1)$};
-            \filldraw (010) circle (0.25pt) node [above]       {$(0,1,0)$};
-            \filldraw (100) circle (0.25pt) node [below right] {$(1,0,0)$};
-            \filldraw (011) circle (0.25pt) node [above left]  {$(0,1,1)$};
-            \filldraw (101) circle (0.25pt) node [below]       {$(1,0,1)$};
-            \filldraw (110) circle (0.25pt) node [above right] {$(1,1,0)$};
-            \filldraw (111) circle (0.25pt) node [right]       {$(1,1,1)$};
-
-            \begin{scope}[on background layer]
-                \draw[thick, red]     (001) -- (010);
-                \draw[thick, blue]    (010) -- (100);
-                \draw[thick, green]   (100) -- (001);
-                \draw[thick, cyan]    (011) -- (100);
-                \draw[thick, magenta] (101) -- (010);
-                \draw[thick, yellow]  (110) -- (001);
-                \draw[thick] (111) circle (0.289);
-            \end{scope}
+        \begin{tikzpicture}[scale=2,baseline={(0,0)}]
+            \draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- (0,0);
+            \draw[->]  (0,0.50) -- (0,0.49);
+            \draw[->]  (1,0.50) -- (1,0.51);
+            \draw[->>] (0.50,0) -- (0.55,0);
+            \draw[->>] (0.50,1) -- (0.45,1);
+            \filldraw[black] (0,0) circle (0.5pt) node [below left] {$p$};
+            \filldraw[black] (1,0) circle (0.5pt) node [below right] {$q$};
+            \filldraw[black] (0,1) circle (0.5pt) node [above left] {$q$};
+            \filldraw[black] (1,1) circle (0.5pt) node [above right] {$p$};
+    
+            \filldraw[black] (0,0.5) circle (0pt) node [left] {$a$};
+            \filldraw[black] (1,0.5) circle (0pt) node [right] {$a$};
+            \filldraw[black] (0.5,0) circle (0pt) node [below] {$b$};
+            \filldraw[black] (0.5,1) circle (0pt) node [above] {$b$};
+    
+            \draw (0.5,-0.4) node {$\mathbb{RP}^2$};
+        \end{tikzpicture}
+        \quad
+        \begin{tikzpicture}[scale=2,baseline={(0,0)}]
+            \filldraw[black] (0.5,0.5) node {$\cong$};
+        \end{tikzpicture}
+        \quad
+        \begin{tikzpicture}[decoration={
+                markings,
+                mark=at position 0.53 with {\arrow{>}}},baseline={(0,-1)}
+                ] 
+            \draw[postaction={decorate}] (1,0) arc (0:180:1);
+            \draw[postaction={decorate}] (-1,0) arc (180:360:1);
+            \filldraw (1,0) circle (1pt) node [right] {$q$};
+            \filldraw (-1,0) circle (1pt) node [left] {$q$};
+            \draw (0,1) node [above] {$v$};
+            \draw (0,-1) node [below] {$v$};
+            \draw (0,-1.5) node {$v=a+b$};
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}[scale=2,baseline={(0,0)},decoration={
+                markings,
+                mark=at position 0.53 with {\arrow{>}}},baseline={(0,-1)}
+                ] 
+            \filldraw[dashed, fill=red, opacity=0.5] (0.0,0) circle (0.5);
+            \filldraw[dashed, fill=white] (0.0,0) circle (0.3);
+            \filldraw[dashed, fill=blue, opacity=0.5] (0.0,0) circle (0.4);
+            \draw[postaction={decorate}] (0.5,0) arc (0:180:0.5);
+            \draw[postaction={decorate}] (-0.5,0) arc (180:360:0.5);
+            \filldraw (0.5,0) circle (0.5pt);
+            \filldraw (-0.5,0) circle (0.5pt);
+            \draw (0,-0.75) node {$\mathbb{RP}^2\subseteq\textcolor{red}{U}\cup\textcolor{blue}{V}$};
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}[scale=2,baseline={(0,0)},decoration={
+            markings,
+            mark=at position 0.53 with {\arrow{>}}},baseline={(0,-1)}
+            ] 
+        \filldraw[dashed, fill=red, opacity=0.5] (0.0,0) circle (0.4);
+        \filldraw[dashed, fill=blue, opacity=0.5] (0.0,0) circle (0.4);
+        \filldraw[dashed, fill=white] (0.0,0) circle (0.3);
+        \draw (0,-0.75) node {$\textcolor{red}{U}\textcolor{red!50!blue}{\cap}\textcolor{blue}{V}$};
         \end{tikzpicture}
     \end{center}
 
-    \item Recreate the following diagram:
-    \begin{equation*}
-        h_n(x)=\begin{cases}
-            2n^2x&x\in[0,\frac{1}{2n})\\
-            -2n^2\bigl(x-\frac{1}{n}\bigr)&x\in[\frac{1}{2n},\frac{1}{n})\\
-            0&x\in[\frac{1}{n},1]
-        \end{cases}
-    \end{equation*}
-    \begin{center}
-        \begin{tikzpicture}[declare function={
-            hn(\x,\n)=
-                    (2*(\n^2)*\x) * and(0 <= \x, \x < (1/(2*\n)))
-                    +
-                    (-2*(\n^2)*(\x - (1/\n))) * and((1/(2*\n)) <= \x, \x <= (1/\n))
-                    +
-                    (0) * ((1/\n) <= \x);
-            }]
-            \begin{axis}[%
-                axis x line=middle,
-                axis y line=middle,
-                xmin=-0.1,
-                xmax=1.1,
-                ymin=-1,
-                ymax=11,
-                samples=200,
-                domain=0:1,
-                sharp plot,
-                ]
-                \pgfplotsinvokeforeach{1,2,...,9}{
-                    \pgfmathparse{#1*10}
-                    \addplot[thick,blue!\pgfmathresult] {hn(x,#1)};
-                }
-            \end{axis}
-        \end{tikzpicture}
-    \end{center}
-
-    \item Recreate the following diagram:
-    \begin{center}
-        \begin{tikzpicture}[scale=2]
-            \draw[step=.5,help lines] (-1.4,-1.4) grid (1.4,1.4);
-            \draw[->] (-1.5,0) -- (1.5,0) node [right] {$x$};
-            \draw[->] (0,-1.5) -- (0,1.5) node [above] {$y$};
-            \draw (0,0) circle (1cm);
-        \end{tikzpicture}
-    \end{center}
+    % \item Recreate the following diagram:
+    % \begin{equation*}
+    %     f_n(x)=\begin{cases}
+    %         0 & 0\leq x<\frac{1}{2}-\frac{1}{n}\\
+    %         1-n(\frac{1}{2}-x) & \frac{1}{2}-\frac{1}{n}\leq x<\frac{1}{2}\\
+    %         1 & \frac{1}{2}<x\leq 1
+    %     \end{cases}
+    % \end{equation*}
+    % \begin{center} 
+    %     \begin{tikzpicture}[declare function={
+    %         func(\x,\n)=
+    %                 (0) * and(0 <= \x, \x < ((1/2) - (1/\n)))
+    %                 +
+    %                 (1 - \n*((1/2) - \x)) * and(((1/2) - (1/\n)) <= \x, \x <= (1/2))
+    %                 +
+    %                 (1) * ((1/2) < \x);
+    %         }]
+    %         \begin{axis}[%
+    %             axis x line=middle,
+    %             axis y line=middle,
+    %             xmin=-0.1,
+    %             xmax=1.1,
+    %             ymin=-0.1,
+    %             ymax=1.1,
+    %             samples=500,
+    %             domain=0:1,
+    %             cycle multi list={Blues-9}
+    %             ]
+    %             \foreach \i in {2,...,10} {
+    %                 \addplot+[thick] {func(x,\i)};
+    %             }
+    %         \end{axis}
+    %     \end{tikzpicture}
+    % \end{center}
 \end{enumerate}
 
 
@@ -1558,7 +1981,9 @@ Simpler version without if/else clauses for labels:
 
 
 
-
+\begin{comment}
+    ree
+\end{comment}
 
 
 
