@@ -1165,7 +1165,7 @@ The \verb|plot| command can be used to connect a list of coordinates together:
 \end{center}
 This isn't very useful by itself, since we could have just specified a path and stroked it manually, but this command can also read coordinates from external files.
 
-The \verb|plot| command can be used to plot a function parametrically by giving a coordinate in terms of the macro \verb|\x|:. 
+The \verb|plot| command can be used to plot a function parametrically by giving a coordinate in terms of the macro \verb|\x|:
 
 
 \begin{verbbox}[\small\mbox{}]
@@ -1178,7 +1178,7 @@ The \verb|plot| command can be used to plot a function parametrically by giving 
         \draw[color=red] 
             plot (\x,\x)             node[right] {$f(x)=x$};
         \draw[color=blue]  
-            plot (\x,{sin(rad(\x))}) node[right] {$f(x) = \sin x$};
+            plot (\x,{sin(deg(\x))}) node[right] {$f(x) = \sin x$};
         \draw[color=orange]
             plot (\x,{0.05*exp(\x)}) node[right] {$f(x) = \frac{1}{20} \mathrm e^x$};
     \end{tikzpicture}
@@ -1194,7 +1194,7 @@ The \verb|plot| command can be used to plot a function parametrically by giving 
         \draw[color=red] 
             plot (\x,\x)             node[right] {$f(x)=x$};
         \draw[color=blue]  
-            plot (\x,{sin(rad(\x))}) node[right] {$f(x) = \sin x$};
+            plot (\x,{sin(deg(\x))}) node[right] {$f(x) = \sin x$};
         \draw[color=orange]
             plot (\x,{0.05*exp(\x)}) node[right] {$f(x) = \frac{1}{20} \mathrm e^x$};
     \end{tikzpicture}
@@ -1210,13 +1210,13 @@ The \verb|plot| command can be used to plot a function parametrically by giving 
 
 % To perform computation in axis environments, you will have to use PGF commands, e.g. \verb|pgfplotsinvokeforeach| rather than \verb{\foreach}, as most Tikz commands will not work there.
 
-
+\newpage
 
 
 \section*{Axis Environment}
 
 
-\subsection{ColorBrewer}
+\subsection*{ColorBrewer}
 
 \begin{align*}
     g_n(x)=\begin{cases}
