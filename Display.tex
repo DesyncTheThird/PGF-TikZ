@@ -67,7 +67,7 @@
 \usetikzlibrary{fadings}
 \usetikzlibrary{backgrounds}
 \usepgflibrary{shadings}
-
+\usepgfplotslibrary{colorbrewer}
 
 \tikzset{
     loop above right/.style={above right, out= 60, in= 30, loop},
@@ -99,6 +99,7 @@
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
 \newtheorem*{example}{Example}
+\newtheorem*{exercise}{Exercise}
 
 \renewcommand\qedsymbol{$\blacksquare$}
 
@@ -172,7 +173,9 @@ Here is an example of some \Tikz{} code, and its output:
 
 \subsection*{Specifying Points}
 
-There are many ways to specify \textit{points} or \textit{coordinates} in \Tikz{}. You can declare your coordinate system explicitly (this will be more relevant later) with the syntax
+There are many ways to specify \textit{points} or \textit{coordinates} in \Tikz{}. Coordinates are always written with round brackets.
+
+You can declare your coordinate system explicitly (this will be more relevant later) with the syntax
 \begin{verbatim}
     ([coordinate system] cs: (system-specific coordinates))
 \end{verbatim}
@@ -188,7 +191,7 @@ which takes two keys, \verb|x| and \verb|y|, that accept \TeX{} dimensions. Or, 
 \end{verbatim}
 This coordinate means ``2ex upwards and 5pt to the right of the origin''.
 
-Note that you can also write things like \verb|1em+2cm| in a dimension, since the maths engine is used to evaluate the coordinates.
+Note that, with the \verb|calc| library loaded, you can also write things like \verb|1em+2cm| in a dimension, since the maths engine is used to evaluate the coordinates.
 
 \begin{verbbox}[\small\mbox{}]
 \begin{tikzpicture}
@@ -242,7 +245,7 @@ This coordinate means ``2cm from the origin, 30 degrees counterclockwise from th
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
 
-There are other coordinate systems, but we'll only discuss those on request. From now on, we'll also omit the explicit system declaration unless it is otherwise relevant.
+There are other coordinate systems, but I'll only expand more on those on request. From now on, we'll also omit the explicit system declaration unless it is otherwise relevant.
 
 If units are not provided, e.g. \verb|(1,2)|, then the coordinates are specified in PGF's internal \verb|xy|-coordinate system. By default, the unit $x$-vector points 1cm to the right, and the unit $y$-vector points 1cm upwards.\footnote{It is possible to use coordinates like \verb|(1,2cm)|, which is neither an \verb|xy|-coordinate nor a \verb|canvas| coordinate. Roughly speaking, if you have mixed coordinates, \Tikz{} will typecast the coordinate \verb|(X,Ycm)| to the sum \verb|(X,0)+(0pt,Y)|, and similarly for any mixed dimensions. In particular, \verb|(2+3cm,0)| is \textit{not} the same as \verb|(2cm+3cm,0)|, as it will be typecast to the sum \verb|(2pt,0) + (3cm,0) = (2pt+3cm,0)|.}
 
@@ -254,7 +257,10 @@ You can add two plus signs before a coordinate to specify a coordinate relative 
 
 Instead of two plus signs, you can also add a single one. This also specifies a point in a relative manner, but doesn't update the reference coordinate. For example, \verb|(1,0) +(1,0) +(0,1)| specifies the three coordinates \verb|(1,0)|, then \verb|(2,0)|[$=(1,0)+(1,0)$], and \verb|(1,1)|[$=(1,0)+(0,1)$].
 
-
+A coordinate may also be given a name using the syntax:
+\begin{verbatim}
+    \coordinate (name) at (coordinate)
+\end{verbatim}
 
 
 
@@ -379,6 +385,8 @@ To perform these actions, pass them as options to the \verb|\path| command or us
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
 
+Fills for self-intersecting paths is somewhat complicated; I'll only discuss this on request.
+
 There are many other options you can pass to a draw command, but some important ones include:
 \begin{itemize}
     \item colours;
@@ -389,6 +397,8 @@ There are many other options you can pass to a draw command, but some important 
 \end{itemize}
 
 Passing a colour to a \verb|\draw| command will set the global colour in that scope, so all lines, fills, labels, etc. will all use that colour unless overridden locally. (Opacity has a similar discussion.) If any options are unset, they will default to black/full opacity (defaults may also be modified).
+
+Colours may be specified using the \verb|xcolors| syntax (e.g. \verb|blue!50!white|). (This will be more important when we introduce iteration.)
 
 More specialised options that only set individual colours/opacities may also be used:
 \begin{verbbox}[\small\mbox{}]
@@ -412,6 +422,8 @@ More specialised options that only set individual colours/opacities may also be 
     }}$
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
+
+
 
 Sidenote on opacity and drawing precedence: \Tikz{} draws objects on top of each other, in the order they are given. So, if you want something to appear behind something else, the obscured object must be drawn first, i.e. above the line where the obscuring object is drawn.
 
@@ -447,7 +459,7 @@ Arrows can also be added using this syntax:
 \begin{verbatim}
     \draw[->] ...
 \end{verbatim}
-or similar. There are also various types of arrowheads, \verb|>| being one of the basic kinds. More configurations are listed below:
+or similar. There are also various types of arrowheads, \verb|>| being one of the basic kinds. More configurations are listed below (list is not exhaustive):
 \begin{verbbox}[\small\mbox{}]
     \begin{tikzpicture}[yscale=0.4]
         \draw[->]                   (0,7) -- (3,7);
@@ -493,7 +505,7 @@ Other usual options may also be passed locally to the arrowhead:
     }}$
     $\vcenter{\hbox{\theverbbox}}$
 \end{center}
-Lines can also be dashed/dotted. There are various built-in pattern available (not all listed):
+Lines can also be dashed/dotted. There are various built-in pattern available (list is not exhaustive):
 \begin{verbbox}[\small\mbox{}]
     \begin{tikzpicture}[yscale=0.4]
         \draw[dotted]         (0,6) -- (3,6);
@@ -525,12 +537,134 @@ More generally, you can specify the pattern manually using the \verb|dash patter
 \end{verbatim}
 where \verb|x| and \verb|y| are any \TeX{} dimensions.
 
-
 \subsection*{Nodes}
+
+Nodes are used to add text to an image. They may be specified and drawn using the syntax:
+\begin{verbatim}
+    \node at (x,y) [options] {label}
+\end{verbatim}
+They may also be added to paths using the special path operation \verb|node|:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw
+            (0,0)
+         -- (1,0) node [below]       {foo}
+         -- (1,1) node [above right] {bar}
+         -- cycle;
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw
+            (0,0)
+         -- (1,0) node [below]       {foo}
+         -- (1,1) node [above right] {bar}
+         -- cycle;
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Nodes are specified in this way are positioned at the last coordinate mentioned. Note that nodes are specified in this way are also \textit{not} part of the path itself; they are separate elements drawn before or after the path:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}[fill=blue!20!white]
+    \fill
+        (0,0) node              {first node}
+     -- (1,1) node[behind path] {second node}
+     -- (2,0) node              {third node};
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}[fill=blue!20!white]
+    \fill
+        (0,0) node              {first node}
+     -- (1,1) node[behind path] {second node}
+     -- (2,0) node              {third node};
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Nodes may also take some standard shapes as options (as well as colours, opacities, etc.). Passing the \verb|draw| option along with these shapes will draw the shape around the node, dynamically resizing to fit the label inside:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \fill
+            (0,0) node                            {first node}
+         -- (1,1) node[ellipse,draw, behind path] {second node}
+         -- (0,2) node[circle,fill=red!20]        {third node};
+        \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+    \filldraw
+        (0,0) node                            {first node}
+     -- (1,1) node[ellipse,draw, behind path] {second node}
+     -- (0,2) node[circle,fill=red!20]        {third node};
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Nodes may also be given names:
+\begin{verbatim}
+    \node (name) at (x,y) {label}
+    \path ... -- (x,y) node (name) {label} -- ...
+\end{verbatim}
+A named node may be later referenced by its name. This is useful for computation on coordinates, etc.
+
+% Nodes also naturally interoperate with \Tikz{}'s iteration system:
+
+
 
 
 
 \subsection*{The Calc Library}
+We have already seen some computation within coordinates, but we can do a lot more than simply adding dimensions together.
+
+A coordinate computation is marked with a pair of \$ symbols. One basic computation is to add and scale coordinates:
+\begin{verbbox}[\small\mbox{}]
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (4,4);
+        
+        \filldraw[blue] (2,1.5) circle (2pt) node (a) {};
+        \filldraw[cyan] (0.5,1) circle (2pt) node (b) {};
+        \filldraw[green] ($(a) + 2*(b)$) circle (2pt);
+
+        \draw[blue,->] (0,0) -- (a);
+        \draw[blue,->] ($2*(b)$) -- ($(a) + 2*(b)$);
+
+        \draw[cyan,->] (0,0) -- (b);
+        \draw[cyan,->] (0,0) -- ($2*(b)$);
+        \draw[cyan,->] (a) -- ($(a) + (b)$);
+        \draw[cyan,->] ($(a) + (b)$) -- ($(a) + 2*(b)$);
+    \end{tikzpicture}
+\end{verbbox}
+\begin{center}
+    $\vcenter{\hbox{
+    \begin{tikzpicture}
+        \draw[help lines] (0,0) grid (4,4);
+        
+        \filldraw[blue] (2,1.5) circle (2pt) node (a) {};
+        \filldraw[cyan] (0.5,1) circle (2pt) node (b) {};
+        \filldraw[green] ($ (a) + 2*(b) $) circle (2pt);
+
+        \draw[blue,->] (0,0) -- (a);
+        \draw[blue,->] ($2*(b)$) -- ($(a) + 2*(b)$);
+
+        \draw[cyan,->] (0,0) -- (b);
+        \draw[cyan,->] (0,0) -- ($2*(b)$);
+        \draw[cyan,->] (a) -- ($(a) + (b)$);
+        \draw[cyan,->] ($(a) + (b)$) -- ($(a) + 2*(b)$);
+    \end{tikzpicture}
+    }}$
+    $\vcenter{\hbox{\theverbbox}}$
+\end{center}
+Note how the arrows automatically
+
+
+
+
+
 
 
 
@@ -593,6 +727,79 @@ where \verb|x| and \verb|y| are any \TeX{} dimensions.
 
 \newpage
 \section*{Samples}
+
+\begin{center}
+    \begin{tikzpicture}[baseline=(base)]
+        \begin{axis}[
+        width=6cm,
+        height=5cm,
+        xmin=-1,
+        xmax=5,
+        ymin=-1,
+        ymax=4,
+        axis x line=center,
+        axis y line=center,
+        xlabel={},
+        ylabel={},
+        grid=both,
+        minor tick num=1,
+        xtick distance=1,
+        ytick distance=1,
+        grid style={line width=.1pt, draw=gray!10},
+        xticklabels={},
+        yticklabels={},
+        ]
+            \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+            \draw [very thin, draw=black, fill=lime, opacity=0.2] (axis cs:0,0) -- (axis cs:3,0) -- (axis cs:3,1) -- cycle;
+            \draw [very thin, draw=black, fill=lime, opacity=0.2] (axis cs:1,2) -- (axis cs:4,3) -- (axis cs:1,3) -- cycle;
+            \draw [very thin, draw=black, fill=teal, opacity=0.2] (axis cs:0,0) -- (axis cs:1,2) -- (axis cs:0,2) -- cycle;
+            \draw [very thin, draw=black, fill=teal, opacity=0.2] (axis cs:3,1) -- (axis cs:4,1) -- (axis cs:4,3) -- cycle;
+            \draw [very thin, draw=black, fill=red, opacity=0.2] (axis cs:3,0) -- (axis cs:4,0) -- (axis cs:4,1) -- (axis cs: 3,1) -- cycle;
+            \draw [very thin, draw=black, fill=red, opacity=0.2] (axis cs:0,2) -- (axis cs:1,2) -- (axis cs:1,3) -- (axis cs: 0,3) -- cycle;
+            \draw [very thin, draw=red, fill=yellow, opacity=0.2] (axis cs:0,0) -- (axis cs:3,1) -- (axis cs:4,3) -- (axis cs:1,2) -- cycle;
+            \draw [->,blue,ultra thick] (axis cs:0,0) to (axis cs:3,1);
+            \draw [->,cyan,ultra thick] (axis cs:0,0) to (axis cs:1,2);
+
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:3,0) -- (axis cs:0,0)
+            node[pos=0.5,below=2pt,black]{$\textcolor{blue}{a}$};
+            
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:4,0) -- (axis cs:3,0)
+            node[pos=0.5,below=2pt,black]{$\textcolor{cyan}{b}$};
+
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:0,3) -- (axis cs:1,3)
+            node[pos=0.5,above=2pt,black]{$\textcolor{cyan}{b}$};
+            
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:1,3) -- (axis cs:4,3)
+            node[pos=0.5,above=2pt,black]{$\textcolor{blue}{a}$};
+            
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:0,0) -- (axis cs:0,2)
+            node[pos=0.5,left=2pt,black]{$\textcolor{cyan}{d}$};
+
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:0,2) -- (axis cs:0,3)
+            node[pos=0.5,left=2pt,black]{$\textcolor{blue}{c}$};
+            
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:4,3) -- (axis cs:4,1)
+            node[pos=0.5,right=2pt,black]{$\textcolor{cyan}{d}$};
+
+            \draw [decorate,decoration={calligraphic brace,raise=1pt}] (axis cs:4,1) -- (axis cs:4,0)
+            node[pos=0.5,right=2pt,black]{$\textcolor{blue}{c}$};
+
+            \draw [black] (axis cs:2.5,0.4) circle (0pt) node {$\textcolor{green!70!black}{\frac{ac}{2}}$};
+            \draw [black] (axis cs:1.5,2.6) circle (0pt) node {$\textcolor{green!70!black}{\frac{ac}{2}}$};
+            \draw [black] (axis cs:0.4,1.5) circle (0pt) node {$\textcolor{cyan!70!blue}{\frac{bd}{2}}$};
+            \draw [black] (axis cs:3.6,1.5) circle (0pt) node {$\textcolor{cyan!70!blue}{\frac{bd}{2}}$};
+            \draw [black] (axis cs:3.5,0.5) circle (0pt) node {$\textcolor{red}{bc}$};
+            \draw [black] (axis cs:0.5,2.5) circle (0pt) node {$\textcolor{red}{bc}$};
+        \end{axis}
+    \end{tikzpicture}
+\end{center}
+\begin{equation*}
+    \textcolor{yellow!70!orange}{\det\biggl[}\begin{matrix}
+        \textcolor{blue}{a} & \textcolor{cyan}{b} \\
+        \textcolor{blue}{c} & \textcolor{cyan}{d}
+    \end{matrix}\textcolor{yellow!70!orange}{\biggr]}=(\textcolor{blue}{a}+\textcolor{cyan}{b})(\textcolor{blue}{c}+\textcolor{cyan}{d})-2\left(\textcolor{green!70!black}{\frac{ac}{2}}\right)-2\left(\textcolor{cyan!70!blue}{\frac{bd}{2}}\right)-2\textcolor{red}{bc}=\textcolor{blue}{a}\textcolor{cyan}{d}-\textcolor{cyan}{b}\textcolor{blue}{c}
+\end{equation*}
+
 
 \subsection*{Iteration}
 
@@ -749,16 +956,410 @@ Simpler version without if/else clauses for labels:
 
 \section*{Exercises}
 
-Time to put everything together. Recreate the following diagram:
 
-\begin{center}
-    \begin{tikzpicture}[scale=2]
-        \draw[step=.5,help lines] (-1.4,-1.4) grid (1.4,1.4);
-        \draw[->] (-1.5,0) -- (1.5,0) node [right] {$x$};
-        \draw[->] (0,-1.5) -- (0,1.5) node [above] {$y$};
-        \draw (0,0) circle (1cm);
-    \end{tikzpicture}
-\end{center}
+\begin{enumerate}
+    \item Recreate the following diagram:
+    \begin{equation*}
+        \Pi=\bigl\{\textcolor{blue}{x_1}=(1,0),{\textcolor{cyan}{x_2}}=(-1,1)\bigr\}
+    \end{equation*}
+    \begin{center}
+        \begin{tikzpicture}[scale=2]
+            \filldraw (0,0) circle (0.75pt);
+            \draw[->, thick, blue] (0,0) -- (1,0)  node[right]      {$\textcolor{blue}{x_1}$};
+            \draw[->, thick, cyan] (0,0) -- (-1,1) node[above left] {$\textcolor{cyan}{x_2}$};
+            \draw[->] (0,0) -- (1,1)   node[above right] {$2\textcolor{blue}{x_1}+\textcolor{cyan}{x_2}$};
+            \draw[->] (0,0) -- (0,1)   node[above]       {$\textcolor{blue}{x_1}+\textcolor{cyan}{x_2}$};
+            \draw[->] (0,0) -- (-1,0)  node[left]        {$-\textcolor{blue}{x_1}$};
+            \draw[->] (0,0) -- (-1,-1) node[below left]  {$-2\textcolor{blue}{x_1}-\textcolor{cyan}{x_2}$};
+            \draw[->] (0,0) -- (0,-1)  node[below]       {$-\textcolor{blue}{x_1}-\textcolor{cyan}{x_2}$};
+            \draw[->] (0,0) -- (1,-1)  node[below right] {$-\textcolor{cyan}{x_2}$};
+        \end{tikzpicture}
+    \end{center}
+
+    \item Recreate the following diagrams:
+    \begin{center}
+        \scalebox{1.25}{
+        \begin{tikzpicture}[scale=0.5,baseline={(0,0)},decoration={
+                markings,
+                mark=at position 0.53 with {\arrow{>}}}
+                ]
+            \draw[->] (-2,0) -- (2,0) node [right] {$x_0$};
+            \filldraw (0,0) circle (2pt);
+            \draw (0,-2) node {$\Delta^0$};
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}[scale=0.5,baseline={(0,0)},decoration={
+                markings,
+                mark=at position 0.53 with {\arrow{>}}}
+                ]
+            \draw[->] (-1,0) -- (3,0) node [right] {$x_0$};
+            \draw[->] (0,-1) -- (0,3) node [above] {$x_1$};
+            \filldraw (1,0) circle (2pt) -- (0,1) circle (2pt);
+            \draw (0,-2) node {$\Delta^1$};
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}[scale=0.5,baseline={(0,0)},decoration={
+                markings,
+                mark=at position 0.53 with {\arrow{>}}}
+                ]
+            \draw[->] (-1,0) -- (3,0) node [right] {$x_0$};
+            \draw[->] (0,-1) -- (0,3) node [above] {$x_1$};
+            \draw[->] (-0.75,-0.75) -- (2.25,2.25) node [above right] {$x_2$};
+            \filldraw[color=red!50, opacity=0.75] (1,0) -- (0,1) -- (0.75,0.75) -- cycle;
+            \filldraw (1,0) circle (2pt) -- (0,1) circle (2pt) -- (0.75,0.75) circle (2pt) -- (1,0);
+            \draw (0,-2) node {$\Delta^2$};
+        \end{tikzpicture}
+        }
+    \end{center}
+
+    \item Recreate (some of) the following diagrams:
+    \begin{center}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                axis x line=center,
+                axis y line=center,
+                xticklabels={},
+                yticklabels={},
+                xlabel={$x$},
+                ylabel={$f(x)$},
+                xlabel style={right},
+                ylabel style={above}
+                ]
+                \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+                \addplot[thick, domain=-1:1, samples=100, red] {(1/3)*tan(deg(x))+(1/4)};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+            width=2cm,
+            height=5cm,
+            xmin=-1,
+            xmax=1,
+            ymin=-1,
+            ymax=1,
+            xlabel={},
+            ylabel={},
+            xticklabels={},
+            yticklabels={},
+            axis line style={draw=none},
+            tick style={draw=none},
+            ]
+                \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+                \draw [black] (axis cs:0,0) circle (0pt) node {$+$};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                axis x line=center,
+                axis y line=center,
+                xticklabels={},
+                yticklabels={},
+                xlabel={$x$},
+                ylabel={$g(x)$},
+                xlabel style={right},
+                ylabel style={above}
+                ]
+                \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+                \addplot[thick, domain=-1:1, samples=100, blue] {-x^3-(1/5)*x^2+(1/2)*x};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+            width=2cm,
+            height=5cm,
+            xmin=-1,
+            xmax=1,
+            ymin=-1,
+            ymax=1,
+            xlabel={},
+            ylabel={},
+            xticklabels={},
+            yticklabels={},
+            axis line style={draw=none},
+            tick style={draw=none},
+            ]
+                \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+                \draw [black] (axis cs:0,0) circle (0pt) node {$=$};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                axis x line=center,
+                axis y line=center,
+                xticklabels={},
+                yticklabels={},
+                xlabel={$x$},
+                ylabel={$(f+g)(x)$},
+                xlabel style={right},
+                ylabel style={above}
+                ]
+                \draw (0, 0) [color = red] circle [radius=0pt]coordinate(base);
+                \addplot[thin, dashed, domain=-1:1, samples=100, red] {(1/3)*tan(deg(x))+(1/4)};
+                \addplot[thin, dashed, domain=-1:1, samples=100, blue] {-x^3-(1/5)*x^2+(1/2)*x};
+                \addplot[thick, domain=-1:1, samples=100, green] {(1/3)*tan(deg(x))+(1/4)-x^3-(1/5)*x^2+(1/2)*x};
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+    \begin{center}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=2cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                xlabel={},
+                ylabel={},
+                xticklabels={},
+                yticklabels={},
+                axis line style={draw=none},
+                tick style={draw=none},
+                ]
+                \coordinate (base) at (0,0);
+                \draw [black] (axis cs:0,0) circle (0pt) node {$2$};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                axis x line=center,
+                axis y line=center,
+                xticklabels={},
+                yticklabels={},
+                xlabel={$x$},
+                ylabel={$f(x)$},
+                xlabel style={right},
+                ylabel style={above}
+                ]
+                \coordinate (base) at (0,0);
+                \addplot[thick, domain=-1:1, samples=100, red] {(exp(-x^2)/4)*cos(10*deg(x))};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=2cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                xlabel={},
+                ylabel={},
+                xticklabels={},
+                yticklabels={},
+                axis line style={draw=none},
+                tick style={draw=none},
+                ]
+                \coordinate (base) at (0,0);
+                \draw [black] (axis cs:0,0) circle (0pt) node {$=$};
+            \end{axis}
+        \end{tikzpicture}
+        \begin{tikzpicture}[baseline=(base)]
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-1,
+                xmax=1,
+                ymin=-1,
+                ymax=1,
+                axis x line=center,
+                axis y line=center,
+                xticklabels={},
+                yticklabels={},
+                xlabel={$x$},
+                ylabel={$(2f)(x)$},
+                xlabel style={right},
+                ylabel style={above}
+                ]
+                \coordinate (base) at (0,0);
+                \addplot[thin, dashed, domain=-1:1, samples=100, red] {(exp(-x^2)/4)*cos(10*deg(x))};
+                \addplot[thick, domain=-1:1, samples=100, green] {(exp(-x^2)/2)*cos(10*deg(x))};
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+
+    \item Recreate (some of) the following diagrams:
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-10,
+                xmax=10,
+                ymin=-0.5,
+                ymax=1.5,
+                axis x line=center,
+                axis y line=center,
+                ytick distance=0.5,
+                xlabel={$x$},
+                ylabel={$f(x)$},
+                ]
+                \addplot[thick, domain=-10:-0.25, samples=50, red] {sin(deg(x))/x};
+                \addplot[thick, domain=0.25:10, samples=50, red] {sin(deg(x))/x};
+                \draw [thick,red,fill opacity=0] (axis cs:0,1) circle (2pt) node {};
+            \end{axis}
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-2,
+                xmax=2,
+                ymin=-2,
+                ymax=2,
+                axis x line=center,
+                axis y line=center,
+                xtick distance=1,
+                ytick distance=1,
+                xlabel={$x$},
+                ylabel={$g(x)$},
+                ]
+                \addplot[thick, domain=-2:1, samples=20, green] {-1};
+                \addplot[thick, domain=1:2, samples=20, green] {1};
+                \draw [thick,green,fill=white] (axis cs:1,-1) circle (2pt) node {};
+                \draw [thick,green,fill=green] (axis cs:1,1) circle (2pt) node {};
+            \end{axis}
+        \end{tikzpicture}
+        \qquad
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=5cm,
+                height=5cm,
+                xmin=-2,
+                xmax=2,
+                ymin=-2,
+                ymax=2,
+                axis x line=center,
+                axis y line=center,
+                xlabel={$x$},
+                ylabel={$h(x)$},
+                ]
+                \addplot[thick, domain=-0.5:0.5, samples=1000, blue] {sin(deg(1/x))};
+                \addplot[thick, domain=-2:-0.5, samples=50, blue] {sin(deg(1/x))};
+                \addplot[thick, domain=0.5:2, samples=50, blue] {sin(deg(1/x))};
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+    \vspace*{-0.25cm}
+    \begin{align*}
+        \mathclap{f(x)=\frac{\sin(x)}{x}}
+        \hspace{5cm}
+        \mathclap{g(x)=\begin{cases}
+            -1&x<1\\
+            1&x\geq1
+        \end{cases}}
+        \hspace{5cm}
+        \mathclap{h(x)=\sin\left(\frac{1}{x}\right)}
+    \end{align*}
+
+    \item Recreate the following diagram:
+    \begin{center}
+        \begin{tikzpicture}[scale=6]
+            \coordinate (001) at (0,0);
+            \coordinate (010) at (0.5,0.866);
+            \coordinate (100) at (1,0);
+            \coordinate (011) at ($ 1/2*(001) + 1/2*(010) $);
+            \coordinate (101) at ($ 1/2*(001) + 1/2*(100) $);
+            \coordinate (110) at ($ 1/2*(010) + 1/2*(100) $);
+            \coordinate (111) at ($ 1/3*(001) + 1/3*(010) + 1/3*(100)$);
+
+            \filldraw (001) circle (0.25pt) node [below left]  {$(0,0,1)$};
+            \filldraw (010) circle (0.25pt) node [above]       {$(0,1,0)$};
+            \filldraw (100) circle (0.25pt) node [below right] {$(1,0,0)$};
+            \filldraw (011) circle (0.25pt) node [above left]  {$(0,1,1)$};
+            \filldraw (101) circle (0.25pt) node [below]       {$(1,0,1)$};
+            \filldraw (110) circle (0.25pt) node [above right] {$(1,1,0)$};
+            \filldraw (111) circle (0.25pt) node [right]       {$(1,1,1)$};
+
+            \begin{scope}[on background layer]
+                \draw[thick, red]     (001) -- (010);
+                \draw[thick, blue]    (010) -- (100);
+                \draw[thick, green]   (100) -- (001);
+                \draw[thick, cyan]    (011) -- (100);
+                \draw[thick, magenta] (101) -- (010);
+                \draw[thick, yellow]  (110) -- (001);
+                \draw[thick] (111) circle (0.289);
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+
+    \item Recreate the following diagram:
+    \begin{equation*}
+        h_n(x)=\begin{cases}
+            2n^2x&x\in[0,\frac{1}{2n})\\
+            -2n^2\bigl(x-\frac{1}{n}\bigr)&x\in[\frac{1}{2n},\frac{1}{n})\\
+            0&x\in[\frac{1}{n},1]
+        \end{cases}
+    \end{equation*}
+    \begin{center}
+        \begin{tikzpicture}[declare function={
+            hn(\x,\n)=
+                    (2*(\n^2)*\x) * and(0 <= \x, \x < (1/(2*\n)))
+                    +
+                    (-2*(\n^2)*(\x - (1/\n))) * and((1/(2*\n)) <= \x, \x <= (1/\n))
+                    +
+                    (0) * ((1/\n) <= \x);
+            }]
+            \begin{axis}[%
+                axis x line=middle,
+                axis y line=middle,
+                xmin=-0.1,
+                xmax=1.1,
+                ymin=-1,
+                ymax=11,
+                samples=200,
+                domain=0:1,
+                sharp plot,
+                ]
+                \pgfplotsinvokeforeach{1,2,...,9}{
+                    \pgfmathparse{#1*10}
+                    \addplot[thick,blue!\pgfmathresult] {hn(x,#1)};
+                }
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+
+    \item Recreate the following diagram:
+    \begin{center}
+        \begin{tikzpicture}[scale=2]
+            \draw[step=.5,help lines] (-1.4,-1.4) grid (1.4,1.4);
+            \draw[->] (-1.5,0) -- (1.5,0) node [right] {$x$};
+            \draw[->] (0,-1.5) -- (0,1.5) node [above] {$y$};
+            \draw (0,0) circle (1cm);
+        \end{tikzpicture}
+    \end{center}
+\end{enumerate}
+
+
+
+
+
+
 
 
 
