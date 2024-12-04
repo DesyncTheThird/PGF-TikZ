@@ -76,6 +76,25 @@
     loop below left/.style ={below left,  out=240, in=210, loop}
 }
 
+\tikzset{%
+  show curve controls/.style={
+        postaction={
+            decoration={
+                show path construction,
+                curveto code={
+                \draw [blue] 
+                    (\tikzinputsegmentfirst) -- (\tikzinputsegmentsupporta)
+                    (\tikzinputsegmentlast) -- (\tikzinputsegmentsupportb);
+                \fill [red, opacity=0.5] 
+                    (\tikzinputsegmentsupporta) circle [radius=.5ex]
+                    (\tikzinputsegmentsupportb) circle [radius=.5ex];
+                }
+            },
+            decorate
+        }
+    }
+}
+
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 \MakePerPage{footnote}
 
@@ -145,14 +164,191 @@
 \usepackage{bigfoot}
 \renewcommand{\footnoterule}{\vfill\kern -3pt \hrule width 0.4\columnwidth \kern 2.6pt}
 
-
+\usepackage{comment}
 
 \newcommand{\Tikz}{Ti\textit{k}z{}}
 
 
+\title{Introduction to PGF/\Tikz{}}
+\author{Kit Liu}
+
 \begin{document}
 
-\title{Introduction to PGF/\Tikz{}}
+\maketitle
+
+\vspace{1cm}
+
+\begin{center}
+    \begin{tikzpicture}
+        \filldraw[draw=none, fill=black, opacity=0.65]
+            (1.9,0.1) ellipse (2.9 and 0.7);
+        \path[save path=\back]
+            {[rounded corners=15pt]
+            (0,5)
+         -- (-1,5)
+         -- (-1,1.5)}
+         -- (0,1.5)
+         -- cycle;
+        \filldraw[red, use path=\back];
+        \begin{scope}
+            \clip[use path=\back];
+            \filldraw[draw=none, fill=purple, opacity=0.95]
+                {[rounded corners=5pt]
+                (-1,4.1)
+             -- (-0.5,4)}
+             -- (0,4.1)
+             -- (0,1.5)
+             -- (-1,1.5)
+             -- cycle;
+        \end{scope}
+        \draw[line width=4mm, use path=\back, draw=black];
+        \path[save path=\body]
+            {[rounded corners=15pt]
+            (0,3)
+         -- (0.15,0)
+         -- (1.7,0)}
+            {[rounded corners=5pt]
+         -- (1.75,1.5)
+         -- (3,1.5)}
+         -- (2.35,1.5)
+            {[rounded corners=15pt]
+         -- (2.4,0.25)
+         -- (3.9,0.25)}
+            {[rounded corners=15pt]
+         -- (4,1.4)
+         -- (4.2,2.5)}
+            {[rounded corners=45pt]
+         -- (3.9,6.8)
+         -- (0.15,7)
+         -- cycle};
+        \filldraw[red, use path=\body];
+        \begin{scope}
+            \clip[use path=\body];
+            \filldraw[draw=none, fill=purple, opacity=0.95]
+                (0,9)
+             -- (1,7)
+                {[rounded corners=40pt]
+             -- (0.4,6)
+             -- (0.8,2)
+             -- (4,2)}
+             -- (4,4.5)
+             -- (4,0)
+             -- (0,0)
+             -- cycle;
+        \end{scope}
+        \draw[line width=4mm, use path=\body, draw=black];
+        \draw[rounded corners=25pt, fill=cyan!40!white, draw=black]
+            (4.5,6) rectangle (1.5,4);
+        \begin{scope}
+            \clip (4.5,6) [rounded corners=25pt] rectangle (1.5,4);
+            \filldraw[draw=none, fill=blue!50!black, opacity=0.5]
+                {[rounded corners=20pt]
+                (2.1,6.2)
+             -- (2.1,4.7)
+             -- (4.6,4.7)}
+             -- (4.6,5.2)
+             -- (4.6,4)
+             -- (1.5,4)
+             -- (1.5,6)
+                {[rounded corners=20pt]
+             -- (2.5,6)
+             -- cycle};
+            \draw[very thick, rounded corners=7.5pt, fill=white!90, draw=none]
+                (4,5.5) rectangle (2.8,5);
+        \end{scope}
+        \draw[rounded corners=25pt, line width=4mm, draw=black]
+            (4.5,5.9) rectangle (1.5,4);
+    \end{tikzpicture}
+\end{center}
+
+
+
+
+\begin{verbbox}[\small]
+\begin{tikzpicture}
+    \filldraw[draw=none, fill=black, opacity=0.65]
+        (1.9,0.1) ellipse (2.9 and 0.7);
+    \path[save path=\back]
+        {[rounded corners=15pt]
+        (0,5)
+     -- (-1,5)
+     -- (-1,1.5)}
+     -- (0,1.5)
+     -- cycle;
+    \filldraw[red, use path=\back];
+    \begin{scope}
+        \clip[use path=\back];
+        \filldraw[draw=none, fill=purple, opacity=0.95]
+            {[rounded corners=5pt]
+            (-1,4.1)
+         -- (-0.5,4)}
+         -- (0,4.1)
+         -- (0,1.5)
+         -- (-1,1.5)
+         -- cycle;
+    \end{scope}
+    \draw[line width=4mm, use path=\back, draw=black];
+    \path[save path=\body]
+        {[rounded corners=15pt]
+        (0,3)
+     -- (0.15,0)
+     -- (1.7,0)}
+        {[rounded corners=5pt]
+     -- (1.75,1.5)
+     -- (3,1.5)}
+     -- (2.35,1.5)
+        {[rounded corners=15pt]
+     -- (2.4,0.25)
+     -- (3.9,0.25)}
+        {[rounded corners=15pt]
+     -- (4,1.4)
+     -- (4.2,2.5)}
+        {[rounded corners=45pt]
+     -- (3.9,6.8)
+     -- (0.15,7)
+     -- cycle};
+    \filldraw[red, use path=\body];
+    \begin{scope}
+        \clip[use path=\body];
+        \filldraw[draw=none, fill=purple, opacity=0.95]
+            (0,9)
+         -- (1,7)
+            {[rounded corners=40pt]
+         -- (0.4,6)
+         -- (0.8,2)
+         -- (4,2)}
+         -- (4,4.5)
+         -- (4,0)
+         -- (0,0)
+         -- cycle;
+    \end{scope}
+    \draw[line width=4mm, use path=\body, draw=black];
+    \draw[rounded corners=25pt, fill=cyan!40!white, draw=black]
+        (4.5,6) rectangle (1.5,4);
+    \begin{scope}
+        \clip (4.5,6) [rounded corners=25pt] rectangle (1.5,4);
+        \filldraw[draw=none, fill=blue!50!black, opacity=0.5]
+            {[rounded corners=20pt]
+            (2.1,6.2)
+         -- (2.1,4.7)
+         -- (4.6,4.7)}
+         -- (4.6,5.2)
+         -- (4.6,4)
+         -- (1.5,4)
+         -- (1.5,6)
+            {[rounded corners=20pt]
+         -- (2.5,6)
+         -- cycle};
+        \draw[very thick, rounded corners=7.5pt, fill=white!90, draw=none]
+            (4,5.5) rectangle (2.8,5);
+    \end{scope}
+    \draw[rounded corners=25pt, line width=4mm, draw=black]
+        (4.5,5.9) rectangle (1.5,4);
+\end{tikzpicture}
+\end{verbbox}
+
+
+\scalebox{0.8}{\theverbbox}
 
 \newpage
 
